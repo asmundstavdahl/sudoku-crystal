@@ -1,0 +1,17 @@
+name: sudoku
+version: 0.1.0
+
+authors:
+  - Åsmund Stavdahl <https://github.com/asmundstavdahl>
+
+targets:
+  sudoku:
+    main: src/sudoku.cr
+
+crystal: 0.31.1
+
+license: MIT
+
+dependencies:
+  termbuf:
+    github: asmundstavdahl/termbuf
