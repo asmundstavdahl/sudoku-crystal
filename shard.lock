@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  termbuf:
+    github: asmundstavdahl/termbuf
+    commit: 94845e7d367937247cb4247c1b553c6e5cfb6d77
+
