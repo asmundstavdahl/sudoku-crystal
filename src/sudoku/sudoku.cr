@@ -16,7 +16,7 @@ module Sudoku
     def initialize(board_data)
       @grid = board_data.chars.map { |char| Cell.new(char.to_i) }
 
-      @disp = Termbuf::Display.new(13, 13)
+      @disp = Termbuf::Display.new(26, 13)
       draw_board @disp
     end
 
@@ -49,7 +49,7 @@ module Sudoku
       @grid.each.with_index do |cell, i|
         cell_x = i % 9
         cell_y = (i - cell_x) // 9
-        x = cell_x + cell_x // 3
+        x = cell_x * 2 + cell_x // 3 + 1
         y = cell_y + cell_y // 3
         @disp.set_char!({x + 1, y + 1}, cell.render)
         style = case cell.digit
@@ -70,7 +70,7 @@ module Sudoku
 
     def draw_board(disp)
       (1..9).each do |i|
-        x = i + (i - 1) // 3
+        x = i * 2 + (i - 1) // 3
         y = 0
         disp.set_char!({x, y}, i.to_s)
         disp.set_style!({x, y}, "\e[2m")
