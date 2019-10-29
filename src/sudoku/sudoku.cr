@@ -4,6 +4,8 @@ require "termbuf"
 module Sudoku
   VERSION = "0.1.0"
 
+  save_file = ".sudoku-save"
+
   alias Command = Highlight | Fill | Save | Load | NoOp
 
   class Game
@@ -138,3 +140,48 @@ module Sudoku
   struct NoOp
   end
 end
+
+# re_fill_digit = /^(?<digit>[\d])( ([\d],[\d]))+$/
+# case input
+# when .match re_fill_digit
+#   parts = input.split " "
+#   digit = parts.shift.to_i
+#   xys = parts.map do |xy|
+#     x, y = xy.split(",").map &.to_i
+#     @queue.push Sudoku::Fill.new({x, y}, digit)
+#   end
+#   @queue.pop
+# when .match /^[\d]$/
+#   Sudoku::Highlight.new(input.to_i)
+# when .match re_save
+#   match = input.match(re_save)
+#   case match
+#   when nil
+#     Sudoku::NoOp.new
+#   else
+#     case match["name"]
+#     when String
+#       Sudoku::Save.new(match["name"])
+#     else
+#       Sudoku::Save.new(SaveFile)
+#     end
+#   end
+# when .match re_load
+#   match = input.match re_load
+#   case match
+#   when nil
+#     Sudoku::NoOp.new
+#   else
+#     name = match["name"]
+
+#     board_nr = case match["board_nr"]
+#                when nil
+#                  1
+#                else match["board_nr"].to_i
+#                end
+#     Sudoku::Load.new(name, board_nr)
+#   end
+# else
+#   puts "Command not recognized: #{input}"
+#   Sudoku::NoOp.new
+# end

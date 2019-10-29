@@ -33,54 +33,54 @@ game = Sudoku::Game.new(board_data)
 alias Command = String
 
 class InputSource
-  include Iterator(Command)
+  include Iterator(Sudoku::Command)
 
   @queue = [] of Sudoku::Command
 
-  def next
-    maybe_queued_command = @queue.pop?
+  def initialize(@in_file : IO)
+  end
 
-    case maybe_queued_command
-    when Command
-      maybe_queued_command
-    when nil
-      input = gets(true)
+  def next : Sudoku::Command | Iterator::Stop
+    if @queue.size >= 1
+      @queue.pop
+    else
+      input = @in_file.gets(true)
 
       case input
-      when nil then stop
       when String
-        re_fill_digit = /^(?<digit>[\d])( ([\d],[\d]))+$/
-        re_save = /^s(ave)?( (?<name>[\S]+))?$/
-        re_load = /^l(oad)? (?<name>[\S]+)( (?<board_nr>\d+))?$/
-        case input
-        when .match re_fill_digit
-          parts = input.split " "
-          digit = parts.shift.to_i
-          xys = parts.map do |xy|
-            x, y = xy.split(",").map &.to_i
-            @queue.push Sudoku::Fill.new({x, y}, digit)
+        parts = input.split " "
+        if parts.first?
+          first = parts.shift.not_nil!
+          case
+          when first == "save"
+            case parts.size
+            when 0 then @queue.push Sudoku::Save.new SaveFile
+            else        @queue.push Sudoku::Save.new parts[0]
+            end
+          when first == "load"
+            case parts.size
+            when 0 then @queue.push Sudoku::Load.new SaveFile, 1
+            when 1 then @queue.push Sudoku::Load.new parts[0], 1
+            else        @queue.push Sudoku::Load.new parts[0], parts[1].to_i
+            end
+          when first =~ /^\d$/
+            digit = first.to_i
+            case parts.size
+            when 0
+              @queue.push Sudoku::Highlight.new(digit)
+            else
+              parts.each do |part|
+                x, y = part.split(",").map &.to_i
+                @queue.push Sudoku::Fill.new({x, y}, digit)
+              end
+            end
+          else
+            puts "Command not recognized: #{input}"
+            @queue.push Sudoku::NoOp.new
           end
-          @queue.pop
-        when .match /^[\d]$/
-          Sudoku::Highlight.new(input.to_i)
-        when .match re_save
-          match = input.match re_save
-          name = match["name"]
-          Sudoku::Save.new(name)
-        when .match re_load
-          match = input.match re_load
-          name = match["name"]
-
-          board_nr = case match["board_nr"]
-                     when nil
-                       1
-                     else match["board_nr"]
-                     end
-          Sudoku::Load.new(name, board_nr)
-        else
-          puts "Command not recognized: #{input}"
-          Sudoku::NoOp.new
         end
+        @queue.pop.not_nil!
+      else stop
       end
     end
   end
@@ -91,14 +91,13 @@ prompt = "[0-9]( x,y)+? >> "
 puts game.render
 printf prompt
 
-# inputSource = InputSource.new
-inputSource = [
-  Sudoku::Fill.new({2, 1}, 2),
-  # Sudoku::Save.new(".sudoku-save"),
-  Sudoku::Load.new(".sudoku-save", 1),
-]
+inputSource = InputSource.new STDIN
+# inputSource = [
+#  Sudoku::Fill.new({2, 1}, 2),
+#  # Sudoku::Save.new(".sudoku-save"),
+#  Sudoku::Load.new(".sudoku-save", 1),
+# ]
 inputSource.each do |command|
-  printf "[0-9]( x,y)+ >> "
   game.process command
   puts game.render
   printf prompt
