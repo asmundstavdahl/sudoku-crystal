@@ -1,10 +1,16 @@
 require "./sudoku"
 
+SaveFile = ".sudoku-save"
+
 in_file = case ARGV.size
           when 1, 2
-            ARGF
+            if ARGV[0] == "-"
+              STDIN
+            else
+              ARGF
+            end
           else
-            STDIN
+            File.open(SaveFile)
           end
 
 board_nr = case ARGV.size
