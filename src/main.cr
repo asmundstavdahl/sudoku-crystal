@@ -49,7 +49,7 @@ class InputSource
 
         case input
         when String
-          parts = input.split " "
+          parts = input.strip.split " "
           if parts.first?
             first = parts.shift.not_nil!
             case
